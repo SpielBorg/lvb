@@ -1,24 +1,42 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: 'Label Version Bumper: lbv'
+description: 'Label Version Bumper: lbv'
+author: 'alismx'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
   icon: heart
   color: red
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
+  github_token:
+    description: "GITHUB_TOKEN to list pull requests and create tags"
+    default: '${{ github.token }}'
     required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: Your output description here
-
+  prerelease:
+    description: "GitHub prerelease"
+    default: "false"
+    required: true
+  pr_comment:
+    description: "PR comment, true prevents the action from creating a release, false prevents the PR comment"
+    default: "false"
+    required: true
+  publish:
+    description: "GitHub draft"
+    default: "false"
+    required: true
 runs:
-  using: node20
-  main: dist/index.js
+  using: "composite"
+  steps:
+    - uses: crazy-max/ghaction-github-labeler@v5
+      with:
+        skip-delete: true
+        yaml-file: ./labels.yml
+    - uses: nodejs/setup-node@v2
+      with:
+        node-version: '20'
+      run: dist/index.js
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        PRERELEASE: ${{ inputs.prerelease }}
+        PR_COMMENT: ${{ inputs.pr_comment }}
+        PUBLISH: ${{ inputs.publish }}
